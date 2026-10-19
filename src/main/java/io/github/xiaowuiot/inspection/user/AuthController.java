@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.xiaowuiot.inspection.audit.AuditService;
+import io.github.xiaowuiot.inspection.audit.LoginLog;
 import io.github.xiaowuiot.inspection.common.ApiException;
 import io.github.xiaowuiot.inspection.config.InspectionProperties;
 import io.github.xiaowuiot.inspection.security.AuthUser;
@@ -44,11 +46,13 @@ public class AuthController {
     private final PasswordEncoder encoder;
     private final CurrentUser current;
     private final InspectionProperties props;
+    private final AuditService audit;
 
     public AuthController(AuthenticationManager authManager, SecurityContextRepository contextRepo,
                           UserRepository users, RoleRepository roles, PasswordEncoder encoder,
-                          CurrentUser current, InspectionProperties props) {
+                          CurrentUser current, InspectionProperties props, AuditService audit) {
         this.props = props;
+        this.audit = audit;
         this.authManager = authManager;
         this.contextRepo = contextRepo;
         this.users = users;
@@ -90,8 +94,12 @@ public class AuthController {
             auth = authManager.authenticate(
                     UsernamePasswordAuthenticationToken.unauthenticated(body.username().strip(), body.password()));
         } catch (DisabledException e) {
+            audit.login(users.findByUsername(body.username().strip()).orElse(null), body.username().strip(),
+                    LoginLog.Action.LOGIN_FAILED, "账号已停用", req);
             throw new ApiException(HttpStatus.UNAUTHORIZED, "DISABLED", "账号已被停用，请联系系统管理员");
         } catch (AuthenticationException e) {
+            audit.login(users.findByUsername(body.username().strip()).orElse(null), body.username().strip(),
+                    LoginLog.Action.LOGIN_FAILED, "用户名或密码错误", req);
             throw new ApiException(HttpStatus.UNAUTHORIZED, "BAD_CREDENTIALS", "用户名或密码错误");
         }
         // 登录成功后换一个会话 ID，防止会话固定攻击
@@ -104,6 +112,7 @@ public class AuthController {
 
         User user = users.findById(((AuthUser) auth.getPrincipal()).getId()).orElseThrow();
         user.setLastLoginAt(LocalDateTime.now());
+        audit.login(user, user.getUsername(), LoginLog.Action.LOGIN, null, req);
         return new Me(UserView.of(user));
     }
 
@@ -125,6 +134,10 @@ public class AuthController {
 
     @PostMapping("/logout")
     public Map<String, Boolean> logout(HttpServletRequest req) {
+        Authentication current = SecurityContextHolder.getContext().getAuthentication();
+        if (current != null && current.getPrincipal() instanceof AuthUser u) {
+            audit.login(users.findById(u.getId()).orElse(null), u.getUsername(), LoginLog.Action.LOGOUT, null, req);
+        }
         if (req.getSession(false) != null) {
             req.getSession(false).invalidate();
         }

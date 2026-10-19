@@ -672,6 +672,7 @@
           <van-cell title="我的识别记录" icon="photo-o" is-link @click="$router('/history')" />
           <van-cell v-if="can('HAZARD_REPORT')" title="人工上报隐患" icon="add-o" is-link @click="$router('/report')" />
           <van-cell title="修改密码" icon="lock" is-link @click="$router('/password')" />
+          <van-cell title="登录和操作记录" icon="records-o" is-link @click="$router('/logs')" />
           <van-cell title="在线体验完整版" icon="gem-o" is-link url="https://inspection.xiaowuiot.com/" label="整改闭环、AI 纠错、管理后台" />
         </van-cell-group>
         <promo-card />
@@ -758,6 +759,46 @@
     </div>`,
   };
 
+  // 登录记录和操作记录：系统管理员看所有人，其他人只看自己
+  const LogsPage = {
+    components: { Hero },
+    setup() {
+      const tab = ref(route.params.tab === 'operations' ? 'operations' : 'logins');
+      const all = can('ADMIN');
+      const lists = reactive({
+        logins: { items: [], page: 0, loading: false, finished: false },
+        operations: { items: [], page: 0, loading: false, finished: false },
+      });
+      async function loadMore(k) {
+        const l = lists[k];
+        l.loading = true;
+        try {
+          const r = await api('/audit/' + k + '?size=20&page=' + l.page);
+          l.items.push(...r.items); l.page++;
+          l.finished = l.items.length >= r.total;
+        } catch (e) { fail(e); l.finished = true; } finally { l.loading = false; }
+      }
+      const who = r => all ? (r.name || r.username) + ' · ' : '';
+      return { tab, lists, loadMore, who, all, fmt, back };
+    },
+    template: `<div class="page no-tab">
+      <hero title="登录和操作记录" back @back="back" />
+      <div class="hint" style="margin:12px 16px 0">{{ all ? '你是系统管理员，这里显示所有人的记录。' : '这里只显示你自己的记录。' }}</div>
+      <van-tabs v-model:active="tab" style="margin-top:8px">
+        <van-tab title="登录记录" name="logins">
+          <van-list v-model:loading="lists.logins.loading" :finished="lists.logins.finished" finished-text="没有更多了" @load="loadMore('logins')">
+            <van-cell v-for="r in lists.logins.items" :key="r.id" :title="who(r) + r.actionLabel" :label="[r.client, r.browser, r.ip].filter(Boolean).join(' · ') + (r.message ? '，' + r.message : '')" :value="fmt(r.createdAt)" :title-class="r.action === 'LOGIN_FAILED' ? 'log-failed' : ''" />
+          </van-list>
+        </van-tab>
+        <van-tab title="操作记录" name="operations">
+          <van-list v-model:loading="lists.operations.loading" :finished="lists.operations.finished" finished-text="没有更多了" @load="loadMore('operations')">
+            <van-cell v-for="r in lists.operations.items" :key="r.id" :title="who(r) + r.action + (r.targetId ? ' #' + r.targetId : '')" :label="(r.success ? '成功' : '失败' + (r.message ? '：' + r.message : '')) + ' · ' + [r.client, r.ip].filter(Boolean).join(' · ')" :value="fmt(r.createdAt)" :title-class="r.success ? '' : 'log-failed'" />
+          </van-list>
+        </van-tab>
+      </van-tabs>
+    </div>`,
+  };
+
   // ---------- 路由 ----------
   const routes = [
     { re: /^\/login$/, c: LoginPage, pub: true },
@@ -770,6 +811,7 @@
     { re: /^\/report$/, c: ReportPage },
     { re: /^\/history$/, c: HistoryPage },
     { re: /^\/password$/, c: PasswordPage },
+    { re: /^\/logs$/, c: LogsPage },
   ];
   const current = reactive({ def: routes[0], key: 0 });
 

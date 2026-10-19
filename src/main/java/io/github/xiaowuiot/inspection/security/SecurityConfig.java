@@ -19,6 +19,8 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 
+import io.github.xiaowuiot.inspection.audit.AuditFilter;
+import io.github.xiaowuiot.inspection.audit.AuditService;
 import io.github.xiaowuiot.inspection.user.UserRepository;
 
 /**
@@ -30,9 +32,10 @@ import io.github.xiaowuiot.inspection.user.UserRepository;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, UserRepository users) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, UserRepository users, AuditService audit) throws Exception {
         http
                 .addFilterBefore(new RefreshAuthoritiesFilter(users), AuthorizationFilter.class)
+                .addFilterAfter(new AuditFilter(audit), RefreshAuthoritiesFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
