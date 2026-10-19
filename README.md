@@ -139,13 +139,26 @@ src/main/java/io/github/xiaowuiot/inspection/
 src/main/resources/static/   手机端页面
 ```
 
-## 作者
+## 想系统学、做完整的系统？
 
-**小物学长**：10 年 Java、8 年物联网开发，从设备接入、IoT 平台到上层应用平台都做过，项目涉及物流仓管、智慧园区、智慧环卫。
+这个仓库是**基础版**：拍照识别、确认上报、审核，够你把 AI 识别隐患的流程跑通。
 
-- 公众号：小物学长
-- 知识星球：小物学长的物联网实战营 <https://t.zsxq.com/hldoY>
-- 另一个开源项目：[iot-protocol-gateway](https://github.com/xiaowu-iot/iot-protocol-gateway)，JT/T 808、HJ212 设备接入网关
+完整版的源码、建表语句和系统讲解文档都在知识星球 **「小物学长的物联网实战营」** 里，整改闭环、AI 纠错、经验记忆、管理后台、部署方案都会按专题讲清楚是怎么一步步做出来的。
+
+👉 加入方式：[知识星球「小物学长的物联网实战营」](https://t.zsxq.com/hldoY)，或者关注公众号「**小物学长**」，回复【星球】。
+
+公众号回复【速查】可以领取《IoT 协议速查手册》PDF。
+
+<p align="center">
+  <img src=".github/assets/wechat-qrcode.jpg" width="215" alt="公众号「小物学长」二维码"><br>
+  微信扫码关注公众号「小物学长」
+</p>
+
+其他开源项目：[iot-protocol-gateway](https://github.com/xiaowu-iot/iot-protocol-gateway)（JT/T 808、HJ212 设备接入网关）、[env-monitor](https://github.com/xiaowu-iot/env-monitor)（HJ212 环境在线监测平台）
+
+## 参与贡献
+
+欢迎提交 Issue 和 PR。如果你有识别效果不好的场景照片（请去掉人脸、车牌等敏感信息后再提交），对改进提示词帮助很大。
 
 ## 许可证
 
