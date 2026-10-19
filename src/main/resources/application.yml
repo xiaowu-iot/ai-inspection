@@ -1,0 +1,55 @@
+server:
+  # 0.0.0.0：同一局域网的手机可以直接访问
+  address: 0.0.0.0
+  port: 8090
+  servlet:
+    session:
+      timeout: 7d
+      cookie:
+        same-site: strict
+        http-only: true
+
+spring:
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          # 页面和脚本每次都向服务器确认有没有更新（没变时返回 304，很快），避免手机一直用旧版
+          no-cache: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 60MB
+  datasource:
+    # 默认 H2 文件库，数据在 data-dir/db 下；切 MySQL 见 README
+    url: jdbc:h2:file:${inspection.data-dir}/db/inspection;MODE=MySQL;DATABASE_TO_LOWER=TRUE;AUTO_SERVER=FALSE
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Shanghai
+  jackson:
+    time-zone: Asia/Shanghai
+
+inspection:
+  # 数据目录：数据库和照片都在这里
+  data-dir: ./data
+  ai:
+    # mock：不调用模型，返回固定的演示数据，用来看界面和流程
+    # openai：任意 OpenAI 兼容接口的多模态模型（通义千问 VL、豆包视觉等）
+    provider: ${INSPECTION_AI_PROVIDER:mock}
+    api-key: ${INSPECTION_AI_API_KEY:}
+    # 要用支持图片输入的模型，例如通义千问 qwen-vl-max
+    model: ${INSPECTION_AI_MODEL:qwen-vl-max}
+    # 例如通义千问：https://dashscope.aliyuncs.com/compatible-mode/v1
+    base-url: ${INSPECTION_AI_BASE_URL:}
+    timeout-seconds: 90
+  # 是否开放注册；关掉后只能用管理员账号
+  allow-register: true
+  # 手机端"我的"页面是否显示作者公众号和知识星球入口
+  promo: true
