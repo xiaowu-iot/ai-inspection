@@ -57,7 +57,7 @@ public class OpenAiCompatibleAnalyzer extends LlmAnalyzer {
         }
         String text = choice.path("message").path("content").asText("");
         if (text.isEmpty()) {
-            throw new AnalyzeException("模型响应里没有文本：" + resp);
+            throw new AnalyzeException("识别结果为空，请重试", new IllegalStateException("模型响应里没有文本：" + resp));
         }
         JsonNode usage = resp.path("usage");
         return new Completion(text, usage.path("prompt_tokens").asInt(), usage.path("completion_tokens").asInt());

@@ -6,6 +6,7 @@ import io.github.xiaowuiot.inspection.scene.Scene;
 
 /**
  * 真实模型的公共流程：拼提示词、解析结果。各家接口只需要实现 complete。
+ * 每次调用都经过 {@link ModelCalls}：网络偶发断连自动重试一次，失败时给用户看中文提示，原始错误只写日志。
  */
 public abstract class LlmAnalyzer implements HazardAnalyzer {
 
@@ -21,7 +22,7 @@ public abstract class LlmAnalyzer implements HazardAnalyzer {
 
     @Override
     public Analysis analyze(byte[] jpeg, Scene scene, String note) {
-        Completion c = complete(jpeg, List.of(new Turn("user", Prompts.forScene(scene, note))));
+        Completion c = ModelCalls.call(() -> complete(jpeg, List.of(new Turn("user", Prompts.forScene(scene, note)))));
         return new Analysis(ResultParser.parse(c.text()), c.inputTokens(), c.outputTokens());
     }
 
