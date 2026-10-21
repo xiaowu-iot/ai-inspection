@@ -30,6 +30,22 @@
 
 体验账号大家共用，数据只在体验账号之间可见，每个账号每天能识别的次数有限。
 
+## 界面截图
+
+截图来自完整版（和线上一样）。开源版包含拍照识别、框出隐患、上报审核这些基础功能，整改闭环、AI 训练等区别见下面的对照表。
+
+| 隐患详情：照片上框出隐患位置 | 隐患列表 |
+|---|---|
+| <img src="docs/screenshots/hazard.jpg" width="300" alt="隐患详情"> | <img src="docs/screenshots/hazards.jpg" width="300" alt="隐患列表"> |
+
+**管理后台 · 隐患台账**：按状态、等级筛选，导出 Excel
+
+![隐患台账](docs/screenshots/admin-hazards.jpg)
+
+**管理后台 · AI 训练**：现场纠正沉淀成识别经验，审核过的隐患导出成训练数据集（YOLO 格式）
+
+![AI 训练](docs/screenshots/admin-training.jpg)
+
 ## 开源版和完整版
 
 这个仓库是开源基础版，拉下来就能跑通"拍照 → AI 识别 → 确认上报 → 审核"。
